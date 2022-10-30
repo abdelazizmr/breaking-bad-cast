@@ -1,41 +1,44 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import Header from './components/ui/Header'
-import CharacterGrid from './components/characters/CharacterGrid'
-import Search from './components/ui/Search'
+import React from 'react'
 import './App.css'
+import Header from './components/Header'
+import CharacterCard from './components/CharacterCard'
+import { useState , useEffect } from 'react'
+import Spiner from './components/Spiner'
+
+
 
 const App = () => {
-  const [items, setItems] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [query, setQuery] = useState('')
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      setIsLoading(true)
-      const result = await axios(
-        `https://www.breakingbadapi.com/api/characters?name=${query}`
-      )
-
-      console.log(result.data)
-
-      setItems(result.data)
-      setIsLoading(false)
-    }
-
-    fetchItems()
-  }, [query])
+  const [characters,setCharacters] = useState([])
   
-  const queryFunction = (q) =>{
-    setQuery(q)
+
+  const getCharacters = async(name) =>{
+
+    const resp =  await fetch(name ? `https://www.breakingbadapi.com/api/characters?name=${name}` : 'https://www.breakingbadapi.com/api/characters')
+
+    const data = await resp.json()
+    
+    setCharacters(data)
+
+    console.log(data);
   }
-  
+
+  useEffect(()=>{
+    getCharacters()
+  },[])
+
   return (
-    <div className='container'>
-      <Header />
-      <Search getQuery={queryFunction} />
-      <CharacterGrid isLoading={isLoading} items={items} />
+    <div className='app'>
+      <Header getQuery={getCharacters}/>
+      <div className='grid'>
+        {characters.length >  0 ? 
+        (characters.map((character,index)=>(
+          <CharacterCard character={character} key={index} />
+        )))
+        : (<Spiner/>)}
+      </div>
     </div>
+    
   )
 }
 
